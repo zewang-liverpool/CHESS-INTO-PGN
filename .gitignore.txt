@@ -1,0 +1,16 @@
+# 忽略 Python 缓存
+__pycache__/
+*.pyc
+
+# 忽略大型模型权重文件
+*.pth
+
+# 忽略数据集和视频文件 (关键！)
+chess_dataset/
+squares/
+*.mp4
+*.avi
+
+# 忽略 IDE 配置
+.vscode/
+.idea/
