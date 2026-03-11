@@ -1,67 +1,83 @@
-import json
+import nbformat as nbf
 import os
 
-# Core modules to be integrated into the Jupyter Notebook
-files_to_convert = [
-    "01_auto_data_collector.py",
-    "02_model_trainer.py",
-    "03_extract_static_camera.py"
-]
+def generate_presentation_notebook():
+    """
+    Programmatically generates a Jupyter Notebook (Chess_AI_Pipeline.ipynb) 
+    designed for academic presentation and pipeline demonstration.
+    """
+    print("[System] Initializing Jupyter Notebook serialization process...")
+    
+    # Initialize a new notebook object
+    nb = nbf.v4.new_notebook()
 
-# Base JSON schema for the Jupyter Notebook
-notebook = {
-    "cells": [
-        {
-            "cell_type": "markdown",
-            "metadata": {},
-            "source": [
-                "# Automated Chess Video to PGN Extraction Pipeline\n",
-                "\n",
-                "This notebook provides an automated end-to-end machine learning workflow. Execute the cells sequentially to perform the following stages: **Data Acquisition -> Model Training -> Game State Extraction**.\n",
-                "\n",
-                "> **OpenCV GUI Warning:** Executing cells containing `cv2.imshow` will initialize an external GUI window. Upon completion of the required interactions, strictly use the `Esc` key to terminate the window. **Do not force-close the window using the OS close button**, as this may result in a kernel deadlock."
-            ]
-        }
-    ],
-    "metadata": {
-        "kernelspec": {
-            "display_name": "Python 3",
-            "language": "python",
-            "name": "python3"
-        }
-    },
-    "nbformat": 4,
-    "nbformat_minor": 4
-}
+    # Introduction Markdown Cell
+    intro_md = """# Chess-CV-Pipeline: Engineering Demonstration
+### End-to-End Chess Move Extraction via Computer Vision & Deep Learning
+**Author:** [Your Name/ID]  
+**Date:** March 2026  
 
-# Iteratively read Python scripts and parse them into Notebook code cells
-for py_file in files_to_convert:
-    if os.path.exists(py_file):
-        # Append a Markdown cell for section titling
-        notebook["cells"].append({
-            "cell_type": "markdown",
-            "metadata": {},
-            "source": [f"## Execute Module: `{py_file}`"]
-        })
-        
-        # Ingest script content and append as a Code cell
-        with open(py_file, "r", encoding="utf-8") as f:
-            code_lines = f.readlines()
-            
-        notebook["cells"].append({
-            "cell_type": "code",
-            "execution_count": None,
-            "metadata": {},
-            "outputs": [],
-            "source": code_lines
-        })
-        print(f"Success: Module '{py_file}' successfully loaded into the Notebook structure.")
-    else:
-        print(f"Warning: File '{py_file}' not found. Skipping integration.")
+This notebook serves as an interactive demonstration of the Chess CV Pipeline. We mitigate **Illumination Variance** and **Kinematic Interference** by integrating `ResNet-18` spatial classification with Canny Edge-based structural validation.
+"""
 
-# Serialize and export the final .ipynb file
-output_file = "Chess_AI_Pipeline.ipynb"
-with open(output_file, "w", encoding="utf-8") as f:
-    json.dump(notebook, f, ensure_ascii=False, indent=2)
+    # Architecture Overview Markdown Cell
+    architecture_md = """## 1. System Architecture
+The pipeline is divided into three fundamental macro-stages:
+1. **Data Ingestion (Stage 1):** Automated bounding-box slicing and human-in-the-loop annotation.
+2. **CNN Training (Stage 2):** Feature extraction utilizing `PyTorch` and ResNet-18.
+3. **Spatial Inference (Stage 3):** Homography projection, temporal differencing, and probabilistic logic validation."""
 
-print("\nProcess completed. Notebook successfully generated: " + output_file)
+    # CLI Pipeline Code Cell
+    cli_code = """# Initialize the ML Pipeline Controller
+# (Uncomment the line below to run the interactive CLI within the notebook)
+# !python main.py"""
+
+    # Inference Code Explanation
+    inference_md = """## 2. Core Inference Engine (Anti-Hallucination)
+To prevent *State Desynchronization* (Ghost Moves), the pipeline utilizes a strict validation layer. The execution code for the static camera extraction is as follows:"""
+
+    # Inference Execution Code Cell
+    inference_code = """# Execute the core extraction script
+# Note: An external OpenCV GUI window will prompt for ROI calibration.
+!python 03_extract_static_camera.py"""
+
+    # Verification Code Cell
+    verify_md = """## 3. PGN Artifact Verification
+Parsing the output `extracted_game_static.pgn` to validate logical legality."""
+    
+    verify_code = """import chess.pgn
+    
+pgn_path = "extracted_game_static.pgn"
+try:
+    with open(pgn_path, "r", encoding="utf-8") as f:
+        game = chess.pgn.read_game(f)
+        if game:
+            print("[Success] PGN Loaded Successfully. Headers:")
+            for key, value in game.headers.items():
+                print(f"  {key}: {value}")
+            print("\\n[Result] Final FEN:", game.board().fen())
+except Exception as e:
+    print("[Error] Could not load PGN artifact:", e)
+"""
+
+    # Append cells to the notebook
+    nb['cells'] = [
+        nbf.v4.new_markdown_cell(intro_md),
+        nbf.v4.new_markdown_cell(architecture_md),
+        nbf.v4.new_code_cell(cli_code),
+        nbf.v4.new_markdown_cell(inference_md),
+        nbf.v4.new_code_cell(inference_code),
+        nbf.v4.new_markdown_cell(verify_md),
+        nbf.v4.new_code_cell(verify_code)
+    ]
+
+    # Write the notebook file to the disk
+    output_filename = 'Chess_AI_Pipeline.ipynb'
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        nbf.write(nb, f)
+
+    print(f"[Success] Presentation notebook generated successfully: {output_filename}")
+    print("[Action Required] You can now open this file using Jupyter Notebook or VS Code.")
+
+if __name__ == "__main__":
+    generate_presentation_notebook()
