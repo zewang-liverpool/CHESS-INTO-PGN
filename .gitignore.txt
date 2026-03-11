@@ -1,16 +1,19 @@
-# 忽略 Python 缓存
-__pycache__/
-*.pyc
-
-# 忽略大型模型权重文件
-*.pth
-
-# 忽略数据集和视频文件 (关键！)
+# 忽略庞大的数据集和缓存图
 chess_dataset/
 squares/
+
+# 忽略视频文件
 *.mp4
 *.avi
+*.mov
 
-# 忽略 IDE 配置
-.vscode/
-.idea/
+# 忽略深度学习模型权重 (避免超大文件报错)
+*.pth
+*.pt
+*.h5
+
+# 忽略生成的中间产物和测试结果
+*.pgn
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store

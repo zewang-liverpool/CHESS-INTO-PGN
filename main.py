@@ -1,74 +1,89 @@
-import os
 import subprocess
 import sys
-
-def print_menu():
-    print("\n" + "="*65)
-    print(" Automated Chess Video to PGN Extraction Pipeline (Pro Edition) ")
-    print("="*65)
-    print(" Select an execution module:\n")
-    
-    print(" [Phase 1: Data Acquisition & Preparation]")
-    print("   1. Automated Data Collection (For standard opening configurations)")
-    print("   2. Manual Assisted Collection (For non-standard or partial configurations)")
-    print("")
-    
-    print(" [Phase 2: Model Training]")
-    print("   3. Train Neural Network (Generates serialized .pth weights)")
-    print("")
-    
-    print(" [Phase 3: Inference & Extraction]")
-    print("   4. Static Camera Extraction (Recommended for stable, unmoving footage)")
-    print("   5. Dynamic Camera Extraction (Fallback for footage with panning or jitter)")
-    print("")
-    
-    print(" [System]")
-    print("   0. Terminate Pipeline")
-    print("="*65)
+import time
 
 def run_script(script_name):
-    """Engine for securely executing sub-scripts as distinct processes."""
-    if not os.path.exists(script_name):
-        print(f"\nFatal Error: Target file '{script_name}' not found.")
-        print("Please verify that the file exists in the current working directory and matches the expected naming convention.")
+    """
+    Executes a script as a subprocess.
+    Uses sys.executable to ensure the subprocess shares the same Python virtual environment as main.py.
+    """
+    print(f"\n[{time.strftime('%H:%M:%S')}] 🚀 [System] Launching module: {script_name}...")
+    try:
+        # check=True ensures that if the subprocess fails, an exception is raised in the main process
+        subprocess.run([sys.executable, script_name], check=True)
+        print(f"[{time.strftime('%H:%M:%S')}] ✅ [System] Module {script_name} executed successfully.\n")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[{time.strftime('%H:%M:%S')}] ❌ [Error] Module {script_name} crashed or was interrupted.")
+        return False
+    except FileNotFoundError:
+        print(f"[{time.strftime('%H:%M:%S')}] ❌ [Error] File not found: {script_name}. Verify the working directory.")
+        return False
+
+def path_auto_pipeline():
+    """Pipeline 1: Automated Data Ingestion + Cyclic Training"""
+    print("\n" + "-"*40)
+    print(" 🛠️  Activating Pipeline 1: [Automated Data Flow & Cyclic Training]")
+    print("-"*40)
+    
+    # 1. Execute automated data collection
+    if not run_script("01_auto_data_collector.py"):
+        return
+    
+    # 2. Retrieve user-defined epoch cycles
+    try:
+        train_count = int(input("👉 Data ingestion complete. Enter the number of training cycles (e.g., 3): "))
+        if train_count <= 0:
+            print("⚠️ Cycle count must be > 0. Operation aborted.")
+            return
+    except ValueError:
+        print("❌ Invalid input. Integer required. Operation aborted.")
         return
         
-    print(f"\nInitializing execution engine for: {script_name}...\n")
-    print("-" * 50)
+    # 3. Iteratively execute the training script
+    for i in range(train_count):
+        print(f"\n>>> 🔄 Executing Training Cycle {i+1}/{train_count} <<<")
+        if not run_script("02_model_trainer.py"):
+            print("❌ Training interrupted. Halting subsequent cycles.")
+            break
+            
+    print("\n🎉 [Success] Pipeline 1 execution completed!")
+
+def path_manual_pipeline():
+    """Pipeline 2: Manual Data Collection + Single-pass Training"""
+    print("\n" + "-"*40)
+    print(" 🖐️  Activating Pipeline 2: [Human-in-the-Loop Annotation & Training]")
+    print("-"*40)
     
-    try:
-        # sys.executable references the absolute path of the current Python interpreter binary
-        subprocess.run([sys.executable, script_name], check=True)
-    except KeyboardInterrupt:
-        print("\n\nExecution manually terminated by the user (KeyboardInterrupt).")
-    except subprocess.CalledProcessError as e:
-        print(f"\nExecution aborted due to an internal exception (Exit code: {e.returncode}).")
+    if not run_script("01_manual_data_collector.py"):
+        return
         
-    print("-" * 50)
-    print(f"Module '{script_name}' execution completed.")
+    print("\n>>> 🚀 Initiating model training on manually annotated data <<<")
+    run_script("02_model_trainer.py")
+    
+    print("\n🎉 [Success] Pipeline 2 execution completed!")
 
 def main():
     while True:
-        print_menu()
-        choice = input("Enter module sequence number (0-5) and press Return: ").strip()
-
+        print("\n" + "="*55)
+        print("      🤖 Chess AI End-to-End CLI (ML Pipeline UI)")
+        print("="*55)
+        print(" [1] Automated Pipeline: 01_auto_data_collector -> 02_model_trainer (Iterative)")
+        print(" [2] Manual Pipeline: 01_manual_data_collector -> 02_model_trainer (Single-pass)")
+        print(" [0] Terminate System (Exit)")
+        print("="*55)
+        
+        choice = input("Select workflow (0/1/2): ")
+        
         if choice == '1':
-            run_script("01_auto_data_collector.py")
+            path_auto_pipeline()
         elif choice == '2':
-            run_script("01_manual_data_collector.py")
-        elif choice == '3':
-            run_script("02_model_trainer.py")
-        elif choice == '4':
-            run_script("03_extract_static_camera.py")
-        elif choice == '5':
-            run_script("03_extract_dynamic_camera.py")
+            path_manual_pipeline()
         elif choice == '0':
-            print("\nTerminating the extraction pipeline. Goodbye.\n")
+            print("👋 [System] CLI terminated. Good luck with your presentation!")
             break
         else:
-            print("\nInvalid input exception. Please enter an integer between 0 and 5.")
+            print("⚠️ Invalid selection. Please try again.")
 
 if __name__ == "__main__":
-    # Clear terminal buffer (Cross-platform compatibility for Windows/POSIX architecture)
-    os.system('cls' if os.name == 'nt' else 'clear')
     main()
